@@ -89,6 +89,8 @@ export default function Home() {
   const [raceOpen, setRaceOpen] = useState(false);
   const [raceState, setRaceState] = useState<"ready" | "running" | "done">("ready");
   const [resumeCount, setResumeCount] = useState(0);
+  const [guideOpen, setGuideOpen] = useState(true);
+  const [promptCopied, setPromptCopied] = useState(false);
   const [remoteCaseId, setRemoteCaseId] = useState<string | null>(null);
   const [apiState, setApiState] = useState<ApiState>(apiUrl ? "connecting" : "offline");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -186,6 +188,14 @@ export default function Home() {
     setTimeout(() => setRaceState("done"), 1450);
   };
 
+  const auditPrompt = "仅使用 cockroachdb-cloud MCP 的只读工具。查询 defaultdb 中最新的 RR- 开头恢复案例，展示状态、选择的航班、检查点数量和 action_ledger 记录；然后确认 agent_memories 存在 memory_vector_idx。禁止任何写入。";
+
+  const copyAuditPrompt = async () => {
+    await navigator.clipboard.writeText(auditPrompt);
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 1800);
+  };
+
   const activeStep = Math.max(0, Math.min(phaseIndex, baseTimeline.length - 1));
   const selectedFlight = memoryOn ? flightOptions[0] : flightOptions[1];
   const timeline = useMemo(
@@ -209,9 +219,22 @@ export default function Home() {
           <span>{apiState === "checkpointed" ? "Checkpoint durable" : apiState === "completed" ? "Cloud run complete" : apiUrl ? "Persistent runtime" : "Cloud-ready"}</span>
         </div>
         <button className="audit-button" type="button" onClick={() => document.getElementById("audit")?.scrollIntoView({ behavior: "smooth" })}>
-          Open audit trail <span aria-hidden="true">↗</span>
+          查看数据库证据 <span aria-hidden="true">↗</span>
         </button>
       </header>
+
+      <section className={`director ${guideOpen ? "open" : "closed"}`} aria-label="录制演示导演台">
+        <div className="director-head">
+          <div><span className="small-label">3-MINUTE DEMO · 录制导演台</span><h2>{guideOpen ? "照着 4 步操作，评委马上看懂。" : "录制导演台已收起"}</h2></div>
+          <button type="button" onClick={() => setGuideOpen((value) => !value)}>{guideOpen ? "收起" : "展开步骤"}</button>
+        </div>
+        {guideOpen && <div className="director-grid">
+          <article className={phase !== "idle" ? "passed" : "current"}><span>01 · 航班中断</span><strong>点击“模拟航班取消”</strong><p>代理创建真实云端案例，读取旅客记忆，再寻找替代航班。</p><b>证明：这是会行动的代理，不是聊天机器人。</b></article>
+          <article className={!memoryOn ? "passed" : ""}><span>02 · 记忆改变决定</span><strong>把“长期记忆”关掉再打开</strong><p>OFF 选择最低价 UA930；ON 选择符合偏好的 BA286。</p><b>证明：CockroachDB 记忆真正参与决策。</b></article>
+          <article className={resumeCount > 0 ? "passed" : phase === "approval" || phase === "killed" ? "current" : ""}><span>03 · 故障恢复</span><strong>出现 HUMAN GATE 时“强制终止代理”</strong><p>新进程从 CockroachDB 检查点继续，不重复订座。</p><b>证明：代理挂了，记忆和任务不会丢。</b></article>
+          <article className={raceState === "done" ? "passed" : ""}><span>04 · 并发与审计</span><strong>运行“争抢最后座位”，再用 MCP 查询</strong><p>两名代理只允许一个成功；所有决定可在数据库中核验。</p><b>证明：不超售、可追溯、生产级可靠。</b></article>
+        </div>}
+      </section>
 
       <section className="hero" id="top">
         <div className="hero-copy">
@@ -220,11 +243,11 @@ export default function Home() {
           <p>{copy.body}</p>
           <div className="hero-actions">
             <button className="primary-button" type="button" onClick={trigger}>
-              {phase === "idle" ? "Trigger disruption" : "Restart scenario"}
+              {phase === "idle" ? "模拟航班取消" : "重新开始演示"}
               <span aria-hidden="true">→</span>
             </button>
             <button className="secondary-button" type="button" onClick={killAgent} disabled={phase === "idle" || phase === "killed"}>
-              Kill agent
+              强制终止代理
             </button>
           </div>
         </div>
@@ -260,7 +283,7 @@ export default function Home() {
       <section className="control-strip" aria-label="Scenario controls">
         <div className="memory-toggle-copy">
           <span className="control-icon">✦</span>
-          <div><strong>Persistent memory</strong><span>Compare preference-aware recovery with a stateless agent.</span></div>
+          <div><strong>长期记忆 · Persistent memory</strong><span>关闭后只看价格；打开后会记得旅客偏好与历史。</span></div>
         </div>
         <button
           type="button"
@@ -275,7 +298,13 @@ export default function Home() {
           <span>Selected by agent</span>
           <strong>{selectedFlight.id} · {memoryOn ? "96% memory match" : "lowest fare"}</strong>
         </div>
-        <button type="button" className="race-button" onClick={runRace}>Race for last seat <span>↗</span></button>
+        <button type="button" className="race-button" onClick={runRace}>争抢最后一个座位 <span>↗</span></button>
+      </section>
+
+      <section className="cloud-proof" aria-label="真实云端运行证据">
+        <div><span>真实云端案例</span><strong>{remoteCaseId ?? "点击开始后自动生成"}</strong></div>
+        <div><span>运行模式</span><strong>{apiState === "completed" ? "CockroachDB Cloud 已完成" : apiUrl ? "CockroachDB Cloud 已连接" : "本地演示"}</strong></div>
+        <div><span>当前证明</span><strong>{resumeCount > 0 ? "断点恢复 · 无重复操作" : memoryOn ? "向量记忆正在参与决策" : "无记忆基准决策"}</strong></div>
       </section>
 
       <section className="workspace-grid">
@@ -341,7 +370,8 @@ export default function Home() {
         <div>
           <span className="small-label">MCP AUDIT PROMPT</span>
           <h2>Every decision can explain itself.</h2>
-          <p>Ask CockroachDB Managed MCP why the agent selected BA286, which memories influenced it, and whether any action was repeated after restart.</p>
+          <p>最后用 CockroachDB Managed MCP 查询同一个案例，证明页面展示的航班、检查点和操作记录都真实存在于云数据库。</p>
+          <button className="copy-prompt" type="button" onClick={copyAuditPrompt}>{promptCopied ? "已复制到剪贴板 ✓" : "复制 MCP 只读审计提问"}</button>
         </div>
         <div className="terminal-card">
           <div className="terminal-head"><span /><span /><span /><b>read-only memory auditor</b></div>
