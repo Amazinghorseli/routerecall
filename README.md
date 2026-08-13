@@ -75,7 +75,7 @@ On Windows PowerShell, use `$env:PYTHONPATH="services/api"` before the Python co
    The bootstrap retains `sslmode=verify-full`, uses a trusted CA bundle, creates the schema and vector index, seeds embedded memories, and runs or reuses one cloud verification case. Its output never prints the connection string.
 
 4. Start the API. At startup, RouteRecall inserts the demonstration offers and backfills deterministic embeddings for seed memories.
-5. Copy the managed MCP configuration from the cluster's **Connect → Model Context Protocol (MCP)** tab. Prefer OAuth with read-only access for demonstrations.
+5. The repository's `.vscode/mcp.json` contains the cluster-scoped managed MCP endpoint with no secret. In VS Code, start `cockroachdb-cloud`, authenticate with OAuth, and grant read-only access for demonstrations.
 
 The database connection uses `sslmode=verify-full`. Do not commit `.env`, connection strings, passwords, API keys or MCP bearer tokens.
 

@@ -5,7 +5,7 @@ RouteRecall uses two CockroachDB tools required by the challenge:
 1. **Distributed vector index** is part of the runtime memory path. It retrieves prior preferences and outcomes using cosine distance from `agent_memories.embedding`.
 2. **CockroachDB Cloud managed MCP Server** is the review and operations path. A judge or developer can connect Claude Code, Cursor or VS Code to the cluster and inspect persisted state without a custom proxy.
 
-Copy the MCP connection snippet from the CockroachDB Cloud Console and authorize read-only access for the judge connection. Suggested judge queries:
+The repository includes `.vscode/mcp.json`, configured for the RouteRecall cluster with OAuth and no stored credentials. In VS Code, start the `cockroachdb-cloud` server, choose **Authenticate**, sign in to CockroachDB Cloud, and grant **read-only** permission. Suggested judge queries:
 
 Replace `RR-CLOUD-...` below with the case ID printed by `database/bootstrap_cloud.py`.
 
