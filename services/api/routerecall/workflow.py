@@ -114,20 +114,30 @@ class RecoveryEngine:
         elif step == WorkflowStep.RESERVE_SEAT:
             selected_id = case.context["plan"]["selected_offer_id"]
             offer = next(item for item in case.context["offers"] if item["id"] == selected_id)
-            seats = tuple(offer.get("window_seats", ()))
-            seat = seats[0] if seats else "2F"
-            try:
-                result = self.repository.reserve_seat(case.id, selected_id, seat, f"{case.id}:reserve:{selected_id}:{seat}")
-            except SeatUnavailable:
+            seats = tuple(offer.get("window_seats", ())) or ("2F",)
+            result = None
+            for seat in seats:
+                try:
+                    result = self.repository.reserve_seat(case.id, selected_id, seat, f"{case.id}:reserve:{selected_id}:{seat}")
+                    break
+                except SeatUnavailable:
+                    continue
+            if result is None:
                 alternatives = [item for item in case.context["plan"]["ranked_offers"] if item["offer"]["id"] != selected_id]
                 if not alternatives:
-                    raise
+                    raise SeatUnavailable(f"No seats remain on {selected_id}")
                 replacement = alternatives[0]["offer"]
-                replacement_seats = tuple(replacement.get("window_seats", ()))
-                replacement_seat = replacement_seats[0] if replacement_seats else "2F"
-                case.context["plan"]["selected_offer_id"] = replacement["id"]
-                case.context["replanned_after_contention"] = True
-                result = self.repository.reserve_seat(case.id, replacement["id"], replacement_seat, f"{case.id}:reserve:{replacement['id']}:{replacement_seat}")
+                replacement_seats = tuple(replacement.get("window_seats", ())) or ("2F",)
+                for replacement_seat in replacement_seats:
+                    try:
+                        result = self.repository.reserve_seat(case.id, replacement["id"], replacement_seat, f"{case.id}:reserve:{replacement['id']}:{replacement_seat}")
+                        case.context["plan"]["selected_offer_id"] = replacement["id"]
+                        case.context["replanned_after_contention"] = True
+                        break
+                    except SeatUnavailable:
+                        continue
+                if result is None:
+                    raise SeatUnavailable(f"No seats remain on {selected_id} or {replacement['id']}")
             case.context["reservation"] = result.action.output
             case.context["duplicate_prevented"] = result.duplicate_prevented
 

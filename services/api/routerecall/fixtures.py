@@ -20,9 +20,9 @@ DISRUPTION = Disruption(
 )
 
 OFFERS = [
-    FlightOffer("offer-ba286", "British Airways", "BA286", "SFO", "LHR", "2026-08-13T13:15:00-07:00", "2026-08-14T07:40:00+01:00", 0, 625, 184, 0.91, False, ("1A",)),
+    FlightOffer("offer-ba286", "British Airways", "BA286", "SFO", "LHR", "2026-08-13T13:15:00-07:00", "2026-08-14T07:40:00+01:00", 0, 625, 184, 0.91, False, ("1A", "3A", "4A", "5A", "6A")),
     FlightOffer("offer-ua930", "United", "UA930", "SFO", "LHR", "2026-08-13T19:45:00-07:00", "2026-08-14T14:10:00+01:00", 0, 625, 42, 0.84, True, ()),
-    FlightOffer("offer-ac742", "Air Canada", "AC742", "SFO", "LHR", "2026-08-13T12:05:00-07:00", "2026-08-14T10:40:00+01:00", 1, 875, 96, 0.78, False, ("2F",)),
+    FlightOffer("offer-ac742", "Air Canada", "AC742", "SFO", "LHR", "2026-08-13T12:05:00-07:00", "2026-08-14T10:40:00+01:00", 1, 875, 96, 0.78, False, ("2F", "4F", "6F")),
 ]
 
 MEMORY_TEXTS = [

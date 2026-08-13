@@ -24,7 +24,7 @@ const baseTimeline: TimelineItem[] = [
   { id: "recall", label: "Similar cases recalled", detail: "3 matches via distributed vector search", time: "09:42:03", status: "done" },
   { id: "search", label: "Alternatives searched", detail: "3 viable itineraries from LetsFG", time: "09:42:05", status: "done" },
   { id: "plan", label: "Recovery plan generated", detail: "Preference-aware policy with recalled memory", time: "09:42:07", status: "done" },
-  { id: "reserve", label: "Seat held transactionally", detail: "1A window · idempotency key verified", time: "09:42:09", status: "done" },
+  { id: "reserve", label: "Seat held transactionally", detail: "Window seat · idempotency key verified", time: "09:42:09", status: "done" },
 ];
 
 const flightOptions = [

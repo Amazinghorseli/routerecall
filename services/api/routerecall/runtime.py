@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 
+import certifi
+
 from .fixtures import MEMORY_TEXTS, OFFERS, PASSENGER, build_demo_engine
 from .integrations import (
     DeterministicEmbedding,
@@ -22,6 +24,7 @@ def build_runtime_engine() -> tuple[RecoveryEngine, Repository, str]:
         engine, repository = build_demo_engine()
         return engine, repository, "demo"
 
+    os.environ.setdefault("PGSSLROOTCERT", certifi.where())
     repository = CockroachRepository(database_url)
     embeddings = DeterministicEmbedding()
     repository.add_passenger(PASSENGER)
