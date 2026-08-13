@@ -7,6 +7,8 @@ RouteRecall uses two CockroachDB tools required by the challenge:
 
 Copy the MCP connection snippet from the CockroachDB Cloud Console and authorize read-only access for the judge connection. Suggested judge queries:
 
+Replace `RR-CLOUD-...` below with the case ID printed by `database/bootstrap_cloud.py`.
+
 ```sql
 SELECT id, passenger_id, status, current_step, version
 FROM recovery_cases
@@ -14,12 +16,12 @@ ORDER BY updated_at DESC;
 
 SELECT case_id, step, version, created_at
 FROM workflow_checkpoints
-WHERE case_id = 'RR-DEMO'
+WHERE case_id = 'RR-CLOUD-...'
 ORDER BY version;
 
 SELECT recovery_case_id, action_type, idempotency_key, output
 FROM action_ledger
-WHERE recovery_case_id = 'RR-DEMO';
+WHERE recovery_case_id = 'RR-CLOUD-...';
 ```
 
 The demo UI labels these reads as MCP audit events. It does not claim the MCP server executes passenger-facing writes; runtime writes go through a least-privileged application database user. This separation keeps the story technically accurate and makes auditing straightforward.

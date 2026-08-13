@@ -65,14 +65,16 @@ On Windows PowerShell, use `$env:PYTHONPATH="services/api"` before the Python co
 
 1. Create a CockroachDB Cloud cluster and a SQL user.
 2. From the cluster's **Connect** dialog, copy the PostgreSQL connection string. Keep it private.
-3. Apply the schema and optional readable seed rows:
+3. Copy `.env.example` to `.env`, set `DATABASE_URL`, then run the secure bootstrap:
 
    ```bash
-   cockroach sql --url "$DATABASE_URL" --file database/migrations/001_initial.sql
-   cockroach sql --url "$DATABASE_URL" --file database/seed.sql
+   python -m pip install -r services/api/requirements.txt
+   PYTHONPATH=services/api python database/bootstrap_cloud.py
    ```
 
-4. Copy `.env.example` to `.env`, set `DATABASE_URL`, and start the API. At startup, RouteRecall inserts the demonstration offers and backfills deterministic embeddings for seed memories.
+   The bootstrap retains `sslmode=verify-full`, uses a trusted CA bundle, creates the schema and vector index, seeds embedded memories, and runs or reuses one cloud verification case. Its output never prints the connection string.
+
+4. Start the API. At startup, RouteRecall inserts the demonstration offers and backfills deterministic embeddings for seed memories.
 5. Copy the managed MCP configuration from the cluster's **Connect → Model Context Protocol (MCP)** tab. Prefer OAuth with read-only access for demonstrations.
 
 The database connection uses `sslmode=verify-full`. Do not commit `.env`, connection strings, passwords, API keys or MCP bearer tokens.
